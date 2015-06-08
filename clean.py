@@ -9,7 +9,6 @@ import pandas as pd
 
 """
 id	query	product_title	product_description	 median_relevance	relevance_variance
-
 """
 
 rules = [  r'(playstation)([0-9])',r'([0-9]+)([mgt]b)',r'(iphone)([0-9])',r'(xbox)([0-9])' ]
@@ -24,7 +23,7 @@ stopward_exception_query = {'an extremely goofy movie':'an','wreck it ralph':'it
 	
 if __name__ == '__main__':
 
-	train = pd.read_csv('data/train.csv')
+	train = pd.read_csv(sys.argv[1])
 
 	#clean urls
 	for index,row in train.iterrows():
@@ -47,6 +46,12 @@ if __name__ == '__main__':
 		train['query'][index] = row['query'].encode('utf-8').lower()
 		train['product_title'][index] = row['product_title'].encode('utf-8').lower()
 		train['product_description'][index] = row['product_description'].encode('utf-8').lower()
+		
+	#remove extra whitespaces
+	for index,row in train.iterrows():
+		train['query'][index] = ' '.join( row['query'].encode('utf-8').split() )
+		train['product_title'][index] = ' '.join( row['product_title'].encode('utf-8').split() )
+		train['product_description'][index] = ' '.join( row['product_description'].encode('utf-8').split() )
 
 	#lemmatize
 	lmtzr = WordNetLemmatizer()
@@ -70,11 +75,7 @@ if __name__ == '__main__':
 			words[i] = lmtzr.lemmatize(word)
 		train['product_description'][index] = " ".join(words)
 
-	#remove extra whitespaces
-	for index,row in train.iterrows():
-		train['query'][index] = ' '.join( row['query'].encode('utf-8').split() )
-		train['product_title'][index] = ' '.join( row['product_title'].encode('utf-8').split() )
-		train['product_description'][index] = ' '.join( row['product_description'].encode('utf-8').split() )
+
 
 	#remove stopwards
 	stops = set(stopwords.words("english"))
@@ -116,4 +117,4 @@ if __name__ == '__main__':
 			train['query'][index] = ' '.join(words)
 
 
-	train.to_csv('data/new_train.csv',index = False, mode = 'w',encoding='utf-8')
+	train.to_csv(sys.argv[2] ,index = False, mode = 'w',encoding='utf-8')
